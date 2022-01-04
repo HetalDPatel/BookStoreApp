@@ -1,0 +1,148 @@
+﻿<!--
+This Component has table which display all the Books
+It has Edit and Delete Actions in the Table row -->
+
+@page "/allbooks"
+
+@using BookStoreApp.Model
+@inject NavigationManager navManager
+@inject IBookRepository _bookRepoService
+
+@*Link which navigate the Add Book Page*@
+<div class="form-group" style="margin-top:2%;">
+    <a href="/addbook" )" class="oi oi-plus">
+        Click here to add new book
+    </a>
+</div>
+
+<!-- Check the List, if its not null then its display table for the Books -->
+@if (BookList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @* Grid and GridHeader are Generic components- locatd in Shared folder*@
+
+    <Grid DataSource="BookList" PageSize="3" ReloadList="DeleteConfirmation">
+        <GridColumns>
+            <GridHeader ColumnTitle="Book Id" ColWidth="2%"></GridHeader>
+            <GridHeader ColumnTitle="Book Name" ColWidth="10%"></GridHeader>
+            <GridHeader ColumnTitle="Author" ColWidth="10%"></GridHeader>
+            <GridHeader ColumnTitle="Quantity" ColWidth="4%"></GridHeader>
+            <GridHeader ColumnTitle="Rating" ColWidth="5%"></GridHeader>
+            <GridHeader ColumnTitle="Last Modified Date" ColWidth="6%"></GridHeader>
+            <GridHeader ColumnTitle="Library Classification" ColWidth="4%"></GridHeader>
+            <GridHeader ColumnTitle="Actions" ColWidth="15%"></GridHeader>
+        </GridColumns>
+        <GridRow Context="bookInfo">
+            <td>@bookInfo.BookId</td>
+            <td>@bookInfo.BookName</td>
+            <td>@bookInfo.BookAuthor</td>
+            <td>@bookInfo.Quantity</td>
+            <td>@bookInfo.Rating</td>
+            <td>@bookInfo.LastModifiedBookDate</td>
+            <td>@bookInfo.LibraryClassification</td>
+            <td>
+                <!--  this Edit Link will navigate to Edit Page and Passing the Id -->
+                <a href="@($"/updatebookdetails/{@bookInfo.BookId}")" class="btn btn-info oi oi-pencil">
+                    Edit
+                </a>
+                <!-- this Delete link call the ShowConfirmation mathod of this baseClass and Pass the BookId -->
+                <a @onclick="@(e => ShowConfirmation(bookInfo))" class="btn btn-danger oi oi-trash">
+                    Delete
+                </a>
+            </td>
+        </GridRow>
+        <GridFooter>
+            <td>*</td>
+            <td>*</td>
+            <td>*</td>
+            <td>*</td>
+            <td>*</td>
+            <td>*</td>
+            <td>*</td>
+            <td class="bg-secondary font-weight-bold" style="color:white; height:2%;">Total Books in Store : @BookList.Count</td>
+        </GridFooter>
+    </Grid>
+}
+<!--
+ This is the Model Component- which used for the Delete Confirmation. Model Shows when user Click on the Delete button(in the Table)
+-->
+@if (DeleteConfirmation)
+{
+    <DeleteConfirm OnDelete="OnDeleteBook" book="book"></DeleteConfirm>
+}
+
+
+@code {
+
+    // This Varible for the to show or not Model Dialog - for Delete Confirmation
+
+    private bool DeleteConfirmation;
+
+    // Id for the delete Function
+    private int BookId;
+
+    //Book object for the Delete Function, Passing Value for DeleteConfirm child Component
+    public Book book;
+
+    public List<Book> BookList { get; set; } = new List<Book>();
+
+    // Disply data on table by calling ReloadDataAsync method
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadDataAsync();
+    }
+
+
+    /// <summary>
+    /// This method used to retrieve data from service class and store it to in BookList
+    /// By callig service class Method
+    /// </summary>
+    /// <returns></returns>
+
+    protected async Task ReloadDataAsync()
+    {
+        BookList = await _bookRepoService.GetAllBooksAsync();
+    }
+    /// <summary>
+    /// Exceute when user click on Delete Button
+    /// </summary>
+    /// <param name="id">to get data from List for delete</param>
+
+    public void ShowConfirmation(Book book)
+    {
+        this.BookId = book.BookId;
+        this.book = book;
+        DeleteConfirmation = true;
+    }
+
+    /// <summary>
+    /// Runs when user click on Action Button of Model Dialogue
+    /// If user click on Delete Button it call the service class Delete method
+    ///If they click on Cancle button- the data remain unchanged
+    /// </summary>
+    /// <param name="deleteAction"></param>
+    /// <returns></returns>
+    public async Task OnDeleteBook(bool deleteAction)
+    {
+        DeleteConfirmation = false;
+        if (deleteAction)
+        {
+            _bookRepoService.DeleteBook(BookId);
+            await ReloadDataAsync();
+            StateHasChanged();
+            navManager.NavigateTo("allbooks");
+
+        }
+        else
+        {
+            StateHasChanged();
+            await ReloadDataAsync();
+        }
+
+    }
+}
+
+

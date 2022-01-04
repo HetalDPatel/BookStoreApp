@@ -1,0 +1,41 @@
+﻿<!-- Child Component of ListOfBooks Component.-->
+
+@using BookStoreApp.Model
+<div class="modal fade show d-block" id="deleteConfirmModel" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="deleteConfirmModel">Confirm Delete</h5>
+                <button type="button" class="close" aria-label="Close"
+                        @onclick="@(e => OnDeleteBook(false))">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the data for <strong><em>@book.BookName</em></strong> Book???
+            </div>
+            <div class="modal-footer">
+                <button @onclick="@(e => OnDeleteBook(false))" class="btn btn-secondary">
+                    Cancle
+                </button>
+                <button @onclick="@(e => OnDeleteBook(true))" class="btn btn-danger">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<bool> OnDelete { get; set; }
+
+    [Parameter]
+    public Book book { get; set; }
+
+    public void OnDeleteBook(bool deleteAction)
+    {
+        OnDelete.InvokeAsync(deleteAction);
+
+    }
+}

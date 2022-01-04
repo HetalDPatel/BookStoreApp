@@ -1,0 +1,12 @@
+﻿<th width="@ColWidth">
+    @ColumnTitle
+</th>
+
+@code
+{
+    [Parameter]
+    public string ColumnTitle { get; set; }
+
+    [Parameter]
+    public string ColWidth { get; set; }
+}

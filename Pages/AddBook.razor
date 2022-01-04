@@ -1,0 +1,88 @@
+﻿<!--
+This Page is for the Adding the New Book Data
+ Edit Form contain the data for the Book that user wantes to add in Database.
+ Check the Validations On valid submit
+-->
+
+@page "/addbook"
+
+@using BookStoreApp.Model;
+@using Microsoft.AspNetCore.Components;
+@inject IBookRepository _bookRepoService
+@inject NavigationManager navManager
+
+
+<EditForm Model="book" OnValidSubmit="OnAddNewBookAsync" style="border:1px solid gray; margin-top:2%;">
+    <DataAnnotationsValidator />
+    <div class="jumbotron p-0 m-0">
+        <div class="container pl-4 m-0" style="margin-left:45%;">
+            <h1 class="display-3">Add Book</h1>
+            <p class="lead font-weight-light font-italic" style="font-size:smaller;">Book Name, Author, Qauntity and Rate</p>
+        </div>
+    </div>
+    <div class="form-group row pl-5 mt-5">
+        <label for="bookname"> Book Name:</label>
+        <input id="bookname" class="col-sm-7 form-control ml-4 " @bind-value="book.BookName" placeholder="Book Name" />
+        <ValidationMessage For="@(() => book.BookName)" />
+    </div>
+    <div class="form-group row pl-5">
+        <label for="bookauthor"> Book Author:</label>
+        <input id="bookauthor" class="col-sm-7 form-control ml-4 " @bind-value="book.BookAuthor" placeholder="Author" />
+        <ValidationMessage For="@(() => book.BookAuthor)" />
+    </div>
+    <div class="form-group row pl-5">
+        <label for="bookqty"> Quantity :</label>
+        <input id="bookqty" class="col-sm-3 form-control ml-5 " placeholder="Quantity" value="@book.Quantity" disabled /><br />
+        <input type="range" class="col-sm-3 custom-range ml-3 pt-3" min="0" max="100" step="1" id="bookqty" style="width:300px;" @bind-value="book.Quantity" data-toggle="tooltip">
+        <ValidationMessage For="@(() => book.Quantity)" />
+
+    </div>
+    <div class="form-group row pl-5">
+        <label for="bookrating" class="mr-3"> Rating:</label>
+        <input id="bookrating" class="col-sm-7 form-control ml-5 " @bind-value="book.Rating" placeholder="Ratings" />
+        <ValidationMessage For="@(() => book.Rating)" />
+    </div>
+    <div class="form-group row pl-5">
+        <label for="bookClassification" class="mr-1"> Library Class:</label>
+        <input id="bookClassification" class="col-sm-7 form-control ml-3 " @bind-value="book.LibraryClassification" placeholder="Library Classification" />
+        <ValidationMessage For="@(() => book.LibraryClassification)" />
+    </div>
+    <div class="form-group justify-content-center ">
+        <button class="btn btn-primary" style="margin-left:2%;">Create </button>
+    </div>
+</EditForm>
+
+@code{
+
+    // Accing Book Class property by crating Object
+    public Book book { get; set; } = new Book();
+
+    //Declaring and Intializing List
+    public List<Book> BookList { get; set; } = new List<Book>();
+
+    // Execute first when Component Render
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadDataAsync();
+    }
+
+    protected async Task ReloadDataAsync()
+    {
+        BookList = await _bookRepoService.GetAllBooksAsync();
+    }
+
+    /// <summary>
+    /// Trigger this Method when User Click on "Create" Button
+    /// </summary>
+    /// <returns></returns>
+    protected async Task OnAddNewBookAsync()
+    {
+        //Repository service method call
+        _bookRepoService.AddNewBook(book);
+        //Updating the List
+        await ReloadDataAsync();
+        //Navigate to All Books page
+        navManager.NavigateTo("/allbooks");
+    }
+
+}

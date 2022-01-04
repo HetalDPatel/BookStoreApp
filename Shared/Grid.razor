@@ -1,0 +1,124 @@
+﻿@typeparam TBooks
+@inject IBookRepository _bookRepoService
+
+<div class="table-responsive-sm">
+    <table class="table table-striped table-hover text-center table-bordered ">
+        <thead class="bg-secondary">
+            <tr>
+                @GridColumns
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bookInfo in BookList)
+            {
+                <tr>
+                    @GridRow(bookInfo)
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                @GridFooter
+            </tr>
+        </tfoot>
+
+    </table>
+</div>
+<div>
+    @**@
+    <button class="btn btn-primary" @onclick="@(e=>NavigatePageButtonTo("first"))">&laquo;</button>
+    <button class="btn btn-secondary" @onclick="@(e=>NavigatePageButtonTo("prev"))">Prev</button>
+    @* Loop for the creating Buttons as per the pages*@
+    @for (int i = 0; i < TotalPages; i++)
+    {
+        var pageNumber = i;
+        <button class="btn @(CurrentPage==pageNumber?"btn-dark":"btn-info") m-1" @onclick="@(e=>UpdateListAsPerPage(pageNumber))">@(i+1)</button>
+    }
+    <button class="btn btn-secondary" @onclick="@(e=>NavigatePageButtonTo("next"))">Next</button>
+    <button class="btn btn-primary" @onclick="@(e=>NavigatePageButtonTo("last"))">&raquo;</button>
+    <span class="btn btn-link disabled">Page @(CurrentPage+1) of @(TotalPages)</span>
+</div>
+@code {
+
+    [Parameter]
+
+    public RenderFragment GridColumns { get; set; }
+
+    [Parameter]
+
+    public RenderFragment<TBooks> GridRow { get; set; }
+
+    [Parameter]
+
+    public RenderFragment GridFooter { get; set; }
+
+    //intializing list using typeparam
+    [Parameter]
+    public List<TBooks> DataSource { get; set; }
+
+    // BookList for the displaying in one page
+
+    public List<TBooks> BookList { get; set; }
+
+    // pageSize - number of table records should be display in one page
+    [Parameter]
+    public int PageSize { get; set; }
+
+    //TotalPage - number of pages in the table
+
+    public int TotalPages { get; set; }
+
+    public int CurrentPage { get; set; }
+
+    [Parameter]
+    public bool ReloadList { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        BookList = DataSource.Take(PageSize).ToList();
+        TotalPages = (int)Math.Ceiling((DataSource.Count() / (decimal)PageSize));
+
+    }
+    // Render after delete Function performed
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender && !ReloadList)
+        {
+            UpdateListAsPerPage();
+            ReloadList = true;
+            StateHasChanged();
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    public void UpdateListAsPerPage(int pageNumber=0)
+    {
+        BookList = DataSource.Skip(pageNumber * PageSize).Take(PageSize).ToList();
+        TotalPages = (int)Math.Ceiling((DataSource.Count() / (decimal)PageSize));
+        CurrentPage = pageNumber;
+        this.StateHasChanged();
+    }
+
+    public void NavigatePageButtonTo(string btnDirection)
+    {
+        if (btnDirection == "prev" && CurrentPage > TotalPages - 1)
+        {
+            CurrentPage -= 1;
+        }
+        if (btnDirection == "next" && CurrentPage < TotalPages-1)
+        {
+            CurrentPage += 1;
+        }
+        if (btnDirection == "first")
+        {
+            CurrentPage = 0;
+        }
+        if (btnDirection == "last")
+        {
+            CurrentPage = TotalPages-1;
+        }
+
+        UpdateListAsPerPage(CurrentPage);
+    }
+
+}

@@ -1,0 +1,85 @@
+﻿<!--
+This Component for the Book Updates
+It hase Edit Form, Data allows to edit on the basis what Books Components- Edit link pass the Id
+-->
+
+@page "/updatebookdetails/{BookId}"
+@page "/updatebookdetails"
+<!--/updatebookdetails/{BookId}-->
+@using BookStoreApp.Model;
+@using Microsoft.AspNetCore.Components;
+@inject IBookRepository _bookRepoService
+@inject NavigationManager navManager
+
+
+<EditForm Model="book" OnValidSubmit="OnUpdateBook" style="border:1px groove gray; margin-top:2%; background-color:azure">
+    <DataAnnotationsValidator />
+
+    <h4 class="text-center pt-1">Update the Details of <em>@book.BookName</em></h4>
+    <div class="form-group row pl-5 mt-5">
+        <label for="bookname"> Book Name:</label>
+        <input id="bookname" class="col-sm-7 form-control ml-4 " @bind-value="book.BookName" readonly />
+        <ValidationMessage For="@(() => book.BookName)" />
+    </div>
+    <div class="form-group row pl-5">
+        <label for="bookauthor"> Book Author:</label>
+        <input id="bookauthor" class="col-sm-7 form-control ml-4 " @bind-value="book.BookAuthor" />
+        <ValidationMessage For="@(() => book.BookAuthor)" />
+    </div>
+    <div class="form-group row pl-5">
+        <label for="bookqty"> Quantity :</label>
+        <input id="bookqty" class="col-sm-3 form-control ml-5 " value="@book.Quantity" disabled /><br />
+        <input type="range" class="col-sm-3 custom-range ml-3 pt-3" min="0" max="100" step="1" id="bookqty" style="width:300px;" @bind-value="book.Quantity">
+        <ValidationMessage For="@(() => book.Quantity)" />
+
+    </div>
+    <div class="form-group row pl-5">
+        <label for="bookrating" class="mr-3"> Rating:</label>
+        <input id="bookrating" class="col-sm-7 form-control ml-5 " @bind-value="book.Rating" />
+        <ValidationMessage For="@(() => book.Rating)" />
+    </div>
+    <div class="form-group row pl-5">
+        <label for="bookClassification" class="mr-1">Library Class:</label>
+        <input id="bookClassification" class="col-sm-7 form-control ml-3 " @bind-value="book.LibraryClassification" placeholder="Library Classification" />
+        <ValidationMessage For="@(() => book.LibraryClassification)" />
+    </div>
+    <div class="form-group justify-content-center ">
+        <button id="onClickCreateButton" class="btn btn-success" style="margin-left:45%;">
+            Save Changes
+        </button>
+        <a href="/allBooks" style="font-size:10px; color:darkblue">
+            Back to the Book list
+        </a>
+    </div>
+    <div class="form-group justify-content-start ml-0 ">
+
+    </div>
+</EditForm>
+
+@code{
+
+        public Book book { get; set; }
+
+        // this Paramter used in @Page directive- Pass it GetBooksbyId() to get requested record
+        [Parameter]
+        public string BookId { get; set; }
+
+    // This call the Calling the Service class GetBookbyId to provide the datasource to EditForm
+
+    protected override void OnInitialized()
+    {
+        //Int16.Parse used for converting string BookId into int.
+        book = _bookRepoService.GetBookbyId(Int16.Parse(BookId));
+    }
+    /// <summary>
+    /// Call the Method on Valid Submission
+    /// Navigate Back to the Allbooks page
+    /// </summary>
+    public void OnUpdateBook()
+    {
+        _bookRepoService.UpdateBook(book);
+        navManager.NavigateTo("/allbooks", true);
+
+    }
+
+}
