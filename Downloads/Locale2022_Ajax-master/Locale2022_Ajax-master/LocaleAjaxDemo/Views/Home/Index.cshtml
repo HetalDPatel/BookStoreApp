@@ -1,0 +1,109 @@
+﻿@using LocaleAjaxDemo.Resources
+@model LocaleAjaxDemo.Models.EmployeeModel
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div>
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.FName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.FName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.LName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.LName)
+        </dd>
+        <dt>
+            @Locale.Action
+        </dt>
+        <dd>
+            <button id="delete" onclick="ModelAction('Delete Employee', 'Are you sure you would like to delete?', 'Delete', this, Delete)" data-id="@Model.EmployeeId">Delete</button>
+        </dd>
+        <dt>
+            More info
+        </dt>
+        <dd>
+            <button onclick="ModelAction('Info', 'This is information dialog enjoy and click on learn button to get even more info', 'Learn', this, Info)" data-id="@Model.EmployeeId">Info</button>
+        </dd>
+
+    </dl>
+
+</div>
+
+<div class="modal" id="genericModel" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="action" class="btn btn-primary">
+                    <span class="ui-button-text"></span>
+                </button>
+                <button type="button" id="close" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts
+{
+    <script>
+
+        function ModelAction(title, body, action, event, fn) {
+
+            var id = $(event).data("id");
+            var model = $("#genericModel");
+            $(model).find(".modal-title").text(title);
+            $(model).find(".modal-body").text(body);
+            $(model).find('#action span').text(action);
+            $(model).show();
+
+            $(model).find("#close").click(function() {
+                $(model).hide();
+            });
+
+            $(model).find("#action").click(function () {
+                fn(id, $(model));
+            });
+        }
+
+        var Delete = function(id, model) {
+            
+            $.ajax({
+                url: "../Home/Delete",
+                cache: false,
+                type: 'DELETE',
+                data: { id: id},
+                success: function () {
+                    model.hide();
+                    location.reload();
+                }
+            });
+
+
+        }
+
+        var Info = function () {
+            console.log("Info called");
+            var model = $("#genericModel");
+            $(model).hide();
+        }
+
+    </script>
+}
